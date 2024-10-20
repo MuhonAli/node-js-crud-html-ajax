@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node.js CRUD Application</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">CRUD Application</h2>
+        <form id="itemForm">
+            <div class="mb-3">
+                <label for="name" class="form-label">Item Name</label>
+                <input type="text" class="form-control" name="name" id="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" name="description" id="description" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Item</button>
+        </form>
+
+        <h3 class="mt-5">Items</h3>
+        <ul id="itemList" class="list-group"></ul>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Fetch and display items
+        function fetchItems() {
+            $.get('/items', function(data) {
+                $('#itemList').empty();
+                data.forEach(function(item) {
+                    $('#itemList').append(
+                        `<li class="list-group-item d-flex justify-content-between align-items-center">
+                            <strong>${item.name}</strong> - ${item.description}
+                            <button class="btn btn-danger btn-sm" onclick="deleteItem('${item._id}')">Delete</button>
+                        </li>`
+                    );
+                });
+            });
+        }
+
+     
+
+        $('#itemForm').on('submit', function(event) {
+    event.preventDefault();
+    const itemName = $('#name').val();
+    const itemDescription = $('#description').val();
+
+    console.log('Item Name:', itemName); // Debugging
+    console.log('Item Description:', itemDescription); // Debugging
+
+    $.ajax({
+        url: '/items',
+        type: 'POST',
+        contentType: 'application/json', // Set content type to JSON
+        data: JSON.stringify({ name: itemName, description: itemDescription }), // Stringify the data
+        success: function() {
+            fetchItems(); // Call your fetch function to refresh items
+            $('#name').val(''); // Clear the input
+            $('#description').val(''); // Clear the input
+        },
+        error: function(xhr, status, error) {
+            console.error('Error adding item:', xhr.responseText); // Log error response
+        }
+    });
+});
+
+// Delete item
+function deleteItem(id) {
+    $.ajax({
+        url: `/items/${id}`,
+        type: 'DELETE',
+        success: function() {
+            fetchItems();
+        }
+    });
+}
+
+// Initial fetch of items
+fetchItems();
+    </script>
+</body>
+</html>
